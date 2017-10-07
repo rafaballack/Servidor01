@@ -125,9 +125,9 @@ echo "Se sua internet é lenta, recomenda-se tomar um café enquanto aguarda."
 git clone https://github.com/odoo/odoo.git Odoo/Servidor01
 
 echo "Terminando o arquivo de configuração, quase lá."
-rm ~/odoo/odoo-config
+rm Odoo/Servidor01/odoo-config
 echo ""
-echo "[options]" >> ~/odoo/odoo-config
+echo "[options]" >> Odoo/Servidor01/odoo-config
 echo "addons_path = addons,odoo/addons,~/odoo-brasil" >> Odoo/Servidor01/odoo-config
 echo "admin_passwd = admin" >> Odoo/Servidor01/odoo-config
 echo "auto_reload = False" >> Odoo/Servidor01/odoo-config
