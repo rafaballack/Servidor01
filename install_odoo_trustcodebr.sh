@@ -8,9 +8,6 @@ echo "com o foco em desenvolvimento."
 echo "Atualizando cache do sistema"
 sudo apt-get update
 
-echo "Instalando git"
-sudo apt-get install git -y
-echo "Pacote git instalado"
 
 echo "Instalando postgresql"
 sudo apt install postgresql -y
