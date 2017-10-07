@@ -29,9 +29,9 @@ sudo apt install gcc -y
 echo "Pacote gcc instalado"
 
 echo "Criando usuário postgreSQL ..."
-sudo -u postgres -- psql -c "ALTER USER postgres WITH PASSWORD '1q2w3e';"
-sudo -u postgres -- psql -c "DROP ROLE Servidor01;"
-sudo -u postgres -- psql -c "CREATE ROLE Servidor01 LOGIN PASSWORD '1q2w3e' NOSUPERUSER INHERIT CREATEDB CREATEROLE REPLICATION"
+sudo -u postgres -- psql -c "ALTER USER postgres WITH PASSWORD '123';"
+sudo -u postgres -- psql -c "DROP ROLE odoo;"
+sudo -u postgres -- psql -c "CREATE ROLE odoo LOGIN ENCRYPTED PASSWORD 'md5f7b7bca97b76afe46de6631ff9f7175c' NOSUPERUSER INHERIT CREATEDB CREATEROLE REPLICATION"
 
 echo "==== Instalando dependências Odoo ===="
 sudo apt-get install --no-install-recommends python-pip -y
@@ -63,8 +63,8 @@ sudo apt-get install --no-install-recommends libxext6 -y
 sudo apt-get install --no-install-recommends libxrender1 -y
 sudo apt-get install --no-install-recommends libjpeg-turbo8 -y
 
-wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.1/wkhtmltox-0.12.1_linux-trusty-amd64.deb -P Odoo/Servidor01/
-sudo dpkg -i Odoo/Servidor01/wkhtmltox-0.12.1_linux-trusty-amd64.deb
+wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.1/wkhtmltox-0.12.1_linux-trusty-amd64.deb -P ~/
+sudo dpkg -i ~/wkhtmltox-0.12.1_linux-trusty-amd64.deb
 
 echo "==== Instalação dependências pip para os módulos ===="
 sudo -H pip install --upgrade pip
@@ -122,27 +122,27 @@ echo ">>> pip e seus requerimentos estão instalados. <<<"
 
 echo "Clonando repositório oficial Odoo no GitHub. Isso pode demorar um bom tempo."
 echo "Se sua internet é lenta, recomenda-se tomar um café enquanto aguarda."
-git clone https://github.com/odoo/odoo.git Odoo/Servidor01
+git clone https://github.com/odoo/odoo.git ~/odoo
 
 echo "Terminando o arquivo de configuração, quase lá."
-rm Odoo/Servidor01/odoo-config
+rm ~/odoo/odoo-config
 echo ""
-echo "[options]" >> Odoo/Servidor01/odoo-config
-echo "addons_path = addons,odoo/addons,~/odoo-brasil" >> Odoo/Servidor01/odoo-config
-echo "admin_passwd = admin" >> Odoo/Servidor01/odoo-config
-echo "auto_reload = False" >> Odoo/Servidor01/odoo-config
-echo "csv_internal_sep = ," >> Odoo/Servidor01/odoo-config
-echo "db_host = localhost" >> Odoo/Servidor01/odoo-config
-echo "db_maxconn = 64" >> Odoo/Servidor01/odoo-config
-echo "db_name = False" >> Odoo/Servidor01/odoo-config
-echo "db_port = False" >> Odoo/Servidor01/odoo-config
-echo "db_template = template0" >> Odoo/Servidor01/odoo-config
-echo "db_user = odoo" >> Odoo/Servidor01/odoo-config
-echo "db_password = 123" >> Odoo/Servidor01/odoo-config
+echo "[options]" >> ~/odoo/odoo-config
+echo "addons_path = addons,odoo/addons,~/odoo-brasil" >> ~/odoo/odoo-config
+echo "admin_passwd = admin" >> ~/odoo/odoo-config
+echo "auto_reload = False" >> ~/odoo/odoo-config
+echo "csv_internal_sep = ," >> ~/odoo/odoo-config
+echo "db_host = localhost" >> ~/odoo/odoo-config
+echo "db_maxconn = 64" >> ~/odoo/odoo-config
+echo "db_name = False" >> ~/odoo/odoo-config
+echo "db_port = False" >> ~/odoo/odoo-config
+echo "db_template = template0" >> ~/odoo/odoo-config
+echo "db_user = odoo" >> ~/odoo/odoo-config
+echo "db_password = 123" >> ~/odoo/odoo-config
 
 echo "Clonando repositório oficial dos módulos Odoo Brasil no GitHub."
 echo "Agora falta pouco."
-git clone https://github.com/Trust-Code/odoo-brasil.git Odoo/Servidor01/odoo-brasil
+git clone https://github.com/Trust-Code/odoo-brasil.git ~/odoo-brasil
 
 echo "==== Instalação e configuração Odoo Brasil completa ===="
 echo "---- PostgreSQL ---- "
