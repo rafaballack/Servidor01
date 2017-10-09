@@ -18,14 +18,14 @@
  
 ##fixed parameters
 #openerp
-OE_USER="Servidor01"
-OE_HOME="/opt/Servidor01/$OE_USER"
-OE_HOME_EXT="/opt/Servidor01/$OE_USER/$OE_USER-server"
+OE_USER="Servidor02"
+OE_HOME="/opt/$OE_USER"
+OE_HOME_EXT="/opt/$OE_USER/$OE_USER-server"
 OE_REPORT_HOME="$OE_HOME/report"
 OE_REPORT_ENGINE="$OE_REPORT_HOME/engine"
 OE_REPORT_JASPER="$OE_REPORT_HOME/jasper"
 OE_MODULES_HOME="$OE_HOME/custom/addons"
-OE_THEME_HOME="/opt/Servidor01/$OE_USER/themes"
+OE_THEME_HOME="/opt/$OE_USER/themes"
 
 #Enter version for checkout "8.0" for version 8.0, "7.0 (version 7), saas-4, saas-5 (opendays version) and "master" for trunk
 OE_VERSION="10.0"
@@ -247,22 +247,3 @@ sudo update-rc.d $OE_CONFIG defaults
  
 sudo service $OE_CONFIG start
 echo "Done! The ODOO server can be started with: service $OE_CONFIG start"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
