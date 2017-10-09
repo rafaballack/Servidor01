@@ -1,38 +1,90 @@
-#! /bin/bash
+#!/bin/bash
+################################################################################
+# Script for Installation: ODOO Saas4/Trunk server on Ubuntu 16.04 LTS
+# Author: Fabio Negrini
+#-------------------------------------------------------------------------------
+#  
+# This script will install ODOO Server on
+# clean Ubuntu 16.04 Server
+#-------------------------------------------------------------------------------
+# USAGE:
+#
+# odoo_install
+#
+# EXAMPLE:
+# ./odoo_install 
+#
+################################################################################
+ 
+##fixed parameters
+#openerp
+OE_USER="Servidor01"
+OE_HOME="/opt/Servidor01/$OE_USER"
+OE_HOME_EXT="/opt/Servidor01/$OE_USER/$OE_USER-server"
+OE_REPORT_HOME="$OE_HOME/report"
+OE_REPORT_ENGINE="$OE_REPORT_HOME/engine"
+OE_REPORT_JASPER="$OE_REPORT_HOME/jasper"
+OE_MODULES_HOME="$OE_HOME/custom/addons"
+OE_THEME_HOME="/opt/Servidor01/$OE_USER/themes"
 
-ODOO_VERSION='10'
+#Enter version for checkout "8.0" for version 8.0, "7.0 (version 7), saas-4, saas-5 (opendays version) and "master" for trunk
+OE_VERSION="10.0"
 
+#set the superadmin password
+OE_SUPERADMIN="admin"
+OE_CONFIG="$OE_USER-server"
 
+#--------------------------------------------------
+# Update Server
+#--------------------------------------------------
+echo -e "\n---- Update Server ----"
+sudo apt-get update
+sudo apt-get upgrade -y
 
+#--------------------------------------------------
+# Install PostgreSQL Server
+#--------------------------------------------------
+echo -e "\n---- Install PostgreSQL Server ----"
+sudo apt-get install postgresql -y
+	
+echo -e "\n---- PostgreSQL $PG_VERSION Settings  ----"
+sudo sed -i s/"#listen_addresses = 'localhost'"/"listen_addresses = '*'"/g /etc/postgresql/9.5/main/postgresql.conf
 
+echo -e "\n---- Creating the ODOO PostgreSQL User  ----"
+sudo su - postgres -c "createuser -s $OE_USER" 2> /dev/null || true
 
+#--------------------------------------------------
+# Install Dependencies
+#--------------------------------------------------
+echo -e "\n---- Install tool packages ----"
+sudo apt-get install wget subversion git bzr bzrtools python-pip npm -y
+	
+echo -e "\n---- Install python packages ----"
+sudo apt-get install python-dateutil python-feedparser python-ldap python-libxslt1 python-lxml python-mako python-openid python-psycopg2 python-pybabel python-pychart python-pydot python-pyparsing python-reportlab python-simplejson python-tz python-vatnumber python-vobject python-webdav python-werkzeug python-xlwt python-yaml python-zsi python-docutils python-psutil python-mock python-unittest2 python-jinja2 python-pypdf python-decorator python-requests python-passlib python-pil nodejs-legacy node-less python-apt lxc -y
+	
+echo -e "\n---- Install python libraries ----"
+sudo pip install --upgrade pip
+sudo pip install gdata
+sudo pip install dbf
+sudo pip install py3o.template
+sudo pip install py3o.formats
 
-echo "Instalando python-dev"
-sudo apt install python-dev -y
-echo "Pacote python-dev instalado"
+sudo -H pip install odoorpc
+sudo -H pip install suds_requests
+sudo -H pip install pytrustnfe
+sudo -H pip install python-boleto
+sudo -H pip install python-cnab
 
-echo "Instalando gcc"
-sudo apt install gcc -y
-echo "Pacote gcc instalado"
-
-echo "Criando usuário postgreSQL ..."
-sudo -u postgres -- psql -c "ALTER USER Servidor02 WITH PASSWORD '123';"
-sudo -u postgres -- psql -c "DROP ROLE Servidor02;"
-sudo -u postgres -- psql -c "CREATE ROLE Servidor02 LOGIN ENCRYPTED PASSWORD 'md5f7b7bca97b76afe46de6631ff9f7175c' NOSUPERUSER INHERIT CREATEDB CREATEROLE REPLICATION"
-
-echo "==== Instalando dependências Odoo ===="
-sudo apt-get install --no-install-recommends python-pip -y
-sudo apt-get install --no-install-recommends libxml2-dev -y
-sudo apt-get install --no-install-recommends libxslt-dev -y
-sudo apt-get install --no-install-recommends libsasl2-dev -y
-sudo apt-get install --no-install-recommends libldap2-dev -y
-sudo apt-get install --no-install-recommends libpq-dev -y
-sudo apt-get install --no-install-recommends libjpeg-dev -y
-sudo apt-get install --no-install-recommends nodejs -y
-sudo apt-get install --no-install-recommends npm -y
-sudo apt-get install node-less -y
+echo -e "\n---- Install npm libraries    ----"
 sudo npm install -g less
-sudo ln -s /usr/bin/nodejs /usr/bin/node
+
+echo -e "\n--- Install libreoffice libraries ---"
+sudo apt-get install default-jre ure libreoffice-java-common libreoffice-writer -y
+
+echo -e "\n---- Install wkhtmltopdf  ----"
+sudo add-apt-repository ppa:ecometrica/servers -y
+sudo apt-get update
+sudo apt-get install wkhtmltopdf -y
 
 
 echo "==== Instalando dependências da Localização Brasileira ===="
@@ -50,94 +102,167 @@ sudo apt-get install --no-install-recommends libxext6 -y
 sudo apt-get install --no-install-recommends libxrender1 -y
 sudo apt-get install --no-install-recommends libjpeg-turbo8 -y
 
-wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.1/wkhtmltox-0.12.1_linux-trusty-amd64.deb -P Servidor02/
-sudo dpkg -i Servidor02/wkhtmltox-0.12.1_linux-trusty-amd64.deb
+echo -e "\n---- Create ODOO system user ----"
+sudo adduser --system --quiet --shell=/bin/bash --home=$OE_HOME --gecos 'Servidor01' --group $OE_USER
 
-echo "==== Instalação dependências pip para os módulos ===="
-sudo -H pip install --upgrade pip
-sudo -H pip install --upgrade setuptools
-sudo -H pip install Babel==1.3
-sudo -H pip install Jinja2==2.7.3
-sudo -H pip install Mako==1.0.1
-sudo -H pip install MarkupSafe==0.23
-sudo -H pip install Pillow==2.7.0
-sudo -H pip install Python-Chart==1.39
-sudo -H pip install PyYAML==3.11
-sudo -H pip install Werkzeug==0.9.6
-sudo -H pip install argparse==1.2.1
-sudo -H pip install decorator==3.4.0
-sudo -H pip install docutils==0.12
-sudo -H pip install feedparser==5.1.3
-sudo -H pip install gdata==2.0.18
-sudo -H pip install gevent==1.0.2
-sudo -H pip install greenlet==0.4.7
-sudo -H pip install jcconv==0.2.3
-sudo -H pip install lxml==3.4.1
-sudo -H pip install mock==1.0.1
-sudo -H pip install ofxparse==0.14
-sudo -H pip install passlib==1.6.2
-sudo -H pip install psutil==2.2.0
-sudo -H pip install psycogreen==1.0
-sudo -H pip install psycopg2==2.5.4
-sudo -H pip install pyPdf==1.13
-sudo -H pip install pydot==1.0.2
-sudo -H pip install pyparsing==2.0.3
-sudo -H pip install pyserial==2.7
-sudo -H pip install python-dateutil==2.4.0
-sudo -H pip install python-ldap==2.4.19
-sudo -H pip install python-openid==2.2.5
-sudo -H pip install pytz==2014.10
-sudo -H pip install pyusb==1.0.0b2
-sudo -H pip install qrcode==5.1
-sudo -H pip install reportlab==3.1.44
-sudo -H pip install requests==2.6.0
-sudo -H pip install six==1.9.0
-sudo -H pip install suds-jurko==0.6
-sudo -H pip install vobject==0.6.6
-sudo -H pip install wsgiref==0.1.2
-sudo -H pip install XlsxWriter==0.7.7
-sudo -H pip install xlwt==0.7.5
-sudo -H pip install openpyxl==2.4.0-b1
-sudo -H pip install boto==2.38.0
-sudo -H pip install odoorpc
-sudo -H pip install suds_requests
-sudo -H pip install pytrustnfe
-sudo -H pip install python-boleto
-sudo -H pip install python-cnab
-sudo -H pip install http://labs.libre-entreprise.org/frs/download.php/897/pyxmlsec-0.3.1.tar.gz
-echo ">>> pip e seus requerimentos estão instalados. <<<"
+echo -e "\n---- Create Log directory ----"
+sudo mkdir /var/log/$OE_USER
+sudo chown $OE_USER:$OE_USER /var/log/$OE_USER
 
-echo "Clonando repositório oficial Odoo no GitHub. Isso pode demorar um bom tempo."
-echo "Se sua internet é lenta, recomenda-se tomar um café enquanto aguarda."
-git clone https://github.com/odoo/odoo.git Servidor02/odoo
 
-echo "Terminando o arquivo de configuração, quase lá."
-rm Servidor02/odoo/odoo-config
-echo ""
-echo "[options]" >> Servidor02/odoo/odoo-config
-echo "addons_path = addons,odoo/addons,Servidor02/odoo-brasil" >> Servidor02/odoo/odoo-config
-echo "admin_passwd = admin" >> Servidor02/odoo/odoo-config
-echo "auto_reload = False" >> Servidor02/odoo/odoo-config
-echo "csv_internal_sep = ," >> Servidor02/odoo/odoo-config
-echo "db_host = localhost" >> Servidor02/odoo/odoo-config
-echo "db_maxconn = 64" >> Servidor02/odoo/odoo-config
-echo "db_name = False" >> Servidor02/odoo/odoo-config
-echo "db_port = False" >> Servidor02/odoo/odoo-config
-echo "db_template = template0" >> Servidor02/odoo/odoo-config
-echo "db_user = Servidor02" >> Servidor02/odoo/odoo-config
-echo "db_password = 123" >> Servidor02/odoo/odoo-config
+#--------------------------------------------------
+# Install ODOO
+#--------------------------------------------------
+echo -e "\n==== Installing ODOO Server from OCA ===="
+sudo mkdir $OE_REPORT_HOME
+sudo mkdir $OE_REPORT_ENGINE
+sudo mkdir $OE_REPORT_JASPER
+sudo mkdir $OE_THEME_HOME
 
-echo "Clonando repositório oficial dos módulos Odoo Brasil no GitHub."
-echo "Agora falta pouco."
-git clone https://github.com/Trust-Code/odoo-brasil.git Servidor02/odoo-brasil
+sudo git clone --branch $OE_VERSION https://github.com/odoo/odoo.git $OE_HOME_EXT/
+sudo git clone --branch $OE_VERSION https://github.com/OCA/reporting-engine.git $OE_REPORT_ENGINE/
+sudo git clone --branch $OE_VERSION https://github.com/Openworx/backend_theme $OE_THEME_HOME/backend_theme
+sudo git clone --branch $OE_VERSION https://github.com/fnegrini/jasper_odoo.git $OE_REPORT_JASPER/
 
-echo "==== Instalação e configuração Odoo Brasil completa ===="
-echo "---- PostgreSQL ---- "
-echo ">> Usuário: odoo -- Senha: 123"
-echo ">> Usuário: postgres -- Senha = 123"
-echo "---- Instância Odoo ----"
-echo "Pasta de instalação: ~/odoo"
-echo "Pasta de Addons: addons, ~/odoo/addons, ~/odoo-brasil"
-echo "========================================================"
-echo "A instalação está completa !"
-echo "Obrigado por usar este script !!!"
+echo -e "\n---- Create custom module directory ----"
+sudo su $OE_USER -c "mkdir $OE_HOME/custom"
+sudo su $OE_USER -c "mkdir $OE_HOME/custom/addons"
+
+echo -e "\n---- Setting permissions on home folder ----"
+sudo chown -R $OE_USER:$OE_USER $OE_REPORT_HOME/*
+
+echo -e "\n---- Creating modules folder ----"
+sudo mdkdir $OE_MODULES_HOME
+sudo ln -s $OE_REPORT_ENGINE/base_report_assembler $OE_MODULES_HOME
+sudo ln -s $OE_REPORT_ENGINE/report_py3o $OE_MODULES_HOME
+sudo ln -s $OE_REPORT_ENGINE/report_qweb_element_page_visibility $OE_MODULES_HOME
+sudo ln -s $OE_REPORT_ENGINE/report_xls $OE_MODULES_HOME
+sudo ln -s $OE_REPORT_ENGINE/report_xlsx $OE_MODULES_HOME
+sudo ln -s $OE_REPORT_ENGINE/setup $OE_MODULES_HOME
+sudo ln -s $OE_REPORT_JASPER/odoo/report_jasper_base $OE_MODULES_HOME
+sudo ln -s $OE_THEME_HOME/backend_theme/backend_theme_v10 $OE_MODULES_HOME
+
+echo -e "* Create server config file"
+sudo cp $OE_HOME_EXT/debian/odoo.conf /etc/$OE_CONFIG.conf
+sudo chown $OE_USER:$OE_USER /etc/$OE_CONFIG.conf
+sudo chmod 640 /etc/$OE_CONFIG.conf
+
+echo -e "* Change server config file"
+sudo sed -i s/"db_user = .*"/"db_user = $OE_USER"/g /etc/$OE_CONFIG.conf
+sudo sed -i s/"; admin_passwd.*"/"admin_passwd = $OE_SUPERADMIN"/g /etc/$OE_CONFIG.conf
+sudo su root -c "echo 'logfile = /var/log/$OE_USER/$OE_CONFIG$1.log' >> /etc/$OE_CONFIG.conf"
+sudo su root -c "echo 'addons_path=$OE_HOME_EXT/addons,$OE_HOME/custom/addons' >> /etc/$OE_CONFIG.conf"
+
+
+echo -e "* Create startup file"
+sudo su root -c "echo '#!/bin/sh' >> $OE_HOME_EXT/start.sh"
+sudo su root -c "echo 'sudo -u $OE_USER $OE_HOME_EXT/openerp-server --config=/etc/$OE_CONFIG.conf' >> $OE_HOME_EXT/start.sh"
+sudo chmod 755 $OE_HOME_EXT/start.sh
+
+
+
+#--------------------------------------------------
+# Adding ODOO as a deamon (initscript)
+#--------------------------------------------------
+
+echo -e "* Create init file"
+echo '#!/bin/sh' >> ~/$OE_CONFIG
+echo '### BEGIN INIT INFO' >> ~/$OE_CONFIG
+echo '# Provides: $OE_CONFIG' >> ~/$OE_CONFIG
+echo '# Required-Start: $remote_fs $syslog' >> ~/$OE_CONFIG
+echo '# Required-Stop: $remote_fs $syslog' >> ~/$OE_CONFIG
+echo '# Should-Start: $network' >> ~/$OE_CONFIG
+echo '# Should-Stop: $network' >> ~/$OE_CONFIG
+echo '# Default-Start: 2 3 4 5' >> ~/$OE_CONFIG
+echo '# Default-Stop: 0 1 6' >> ~/$OE_CONFIG
+echo '# Short-Description: Enterprise Business Applications' >> ~/$OE_CONFIG
+echo '# Description: ODOO Business Applications' >> ~/$OE_CONFIG
+echo '### END INIT INFO' >> ~/$OE_CONFIG
+echo 'PATH=/bin:/sbin:/usr/bin' >> ~/$OE_CONFIG
+echo "DAEMON=$OE_HOME_EXT/odoo-bin" >> ~/$OE_CONFIG
+echo "NAME=$OE_CONFIG" >> ~/$OE_CONFIG
+echo "DESC=$OE_CONFIG" >> ~/$OE_CONFIG
+echo '' >> ~/$OE_CONFIG
+echo '# Specify the user name (Default: odoo).' >> ~/$OE_CONFIG
+echo "USER=$OE_USER" >> ~/$OE_CONFIG
+echo '' >> ~/$OE_CONFIG
+echo '# Specify an alternate config file (Default: /etc/openerp-server.conf).' >> ~/$OE_CONFIG
+echo "CONFIGFILE=\"/etc/$OE_CONFIG.conf\"" >> ~/$OE_CONFIG
+echo '' >> ~/$OE_CONFIG
+echo '# pidfile' >> ~/$OE_CONFIG
+echo 'PIDFILE=/var/run/$NAME.pid' >> ~/$OE_CONFIG
+echo '' >> ~/$OE_CONFIG
+echo '# Additional options that are passed to the Daemon.' >> ~/$OE_CONFIG
+echo 'DAEMON_OPTS="-c $CONFIGFILE"' >> ~/$OE_CONFIG
+echo '[ -x $DAEMON ] || exit 0' >> ~/$OE_CONFIG
+echo '[ -f $CONFIGFILE ] || exit 0' >> ~/$OE_CONFIG
+echo 'checkpid() {' >> ~/$OE_CONFIG
+echo '[ -f $PIDFILE ] || return 1' >> ~/$OE_CONFIG
+echo 'pid=`cat $PIDFILE`' >> ~/$OE_CONFIG
+echo '[ -d /proc/$pid ] && return 0' >> ~/$OE_CONFIG
+echo 'return 1' >> ~/$OE_CONFIG
+echo '}' >> ~/$OE_CONFIG
+echo '' >> ~/$OE_CONFIG
+echo 'case "${1}" in' >> ~/$OE_CONFIG
+echo 'start)' >> ~/$OE_CONFIG
+echo 'echo -n "Starting ${DESC}: "' >> ~/$OE_CONFIG
+echo 'start-stop-daemon --start --quiet --pidfile ${PIDFILE} \' >> ~/$OE_CONFIG
+echo '--chuid ${USER} --background --make-pidfile \' >> ~/$OE_CONFIG
+echo '--exec ${DAEMON} -- ${DAEMON_OPTS}' >> ~/$OE_CONFIG
+echo 'echo "${NAME}."' >> ~/$OE_CONFIG
+echo ';;' >> ~/$OE_CONFIG
+echo 'stop)' >> ~/$OE_CONFIG
+echo 'echo -n "Stopping ${DESC}: "' >> ~/$OE_CONFIG
+echo 'start-stop-daemon --stop --quiet --pidfile ${PIDFILE} \' >> ~/$OE_CONFIG
+echo '--oknodo' >> ~/$OE_CONFIG
+echo 'echo "${NAME}."' >> ~/$OE_CONFIG
+echo ';;' >> ~/$OE_CONFIG
+echo '' >> ~/$OE_CONFIG
+echo 'restart|force-reload)' >> ~/$OE_CONFIG
+echo 'echo -n "Restarting ${DESC}: "' >> ~/$OE_CONFIG
+echo 'start-stop-daemon --stop --quiet --pidfile ${PIDFILE} \' >> ~/$OE_CONFIG
+echo '--oknodo' >> ~/$OE_CONFIG
+echo 'sleep 1' >> ~/$OE_CONFIG
+echo 'start-stop-daemon --start --quiet --pidfile ${PIDFILE} \' >> ~/$OE_CONFIG
+echo '--chuid ${USER} --background --make-pidfile \' >> ~/$OE_CONFIG
+echo '--exec ${DAEMON} -- ${DAEMON_OPTS}' >> ~/$OE_CONFIG
+echo 'echo "${NAME}."' >> ~/$OE_CONFIG
+echo ';;' >> ~/$OE_CONFIG
+echo '*)' >> ~/$OE_CONFIG
+echo 'N=/etc/init.d/${NAME}' >> ~/$OE_CONFIG
+echo 'echo "Usage: ${NAME} {start|stop|restart|force-reload}" >&2' >> ~/$OE_CONFIG
+echo 'exit 1' >> ~/$OE_CONFIG
+echo ';;' >> ~/$OE_CONFIG
+echo '' >> ~/$OE_CONFIG
+echo 'esac' >> ~/$OE_CONFIG
+echo 'exit 0' >> ~/$OE_CONFIG
+
+echo -e "* Security Init File"
+sudo mv ~/$OE_CONFIG /etc/init.d/$OE_CONFIG
+sudo chmod 755 /etc/init.d/$OE_CONFIG
+sudo chown root: /etc/init.d/$OE_CONFIG
+
+echo -e "* Start ODOO on Startup"
+sudo update-rc.d $OE_CONFIG defaults
+ 
+sudo service $OE_CONFIG start
+echo "Done! The ODOO server can be started with: service $OE_CONFIG start"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
